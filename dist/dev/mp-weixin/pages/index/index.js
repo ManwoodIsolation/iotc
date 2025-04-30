@@ -7,8 +7,8 @@ const _sfc_main = {
     const deviceId = common_vendor.ref("");
     const isConnected = common_vendor.ref(false);
     const receivedData = common_vendor.ref("");
-    const serviceId = common_vendor.ref("C4:24:08:13:14:7A");
-    const characteristicId = common_vendor.ref("0000FFF0-0000-1000-8000-00805F9B34FB");
+    const serviceId = common_vendor.ref("0000FFE0-0000-1000-8000-00805F9B34FB");
+    const characteristicId = common_vendor.ref("0000FFE1-0000-1000-8000-00805F9B34FB");
     const initBLE = () => {
       common_vendor.index.openBluetoothAdapter({
         success: () => {

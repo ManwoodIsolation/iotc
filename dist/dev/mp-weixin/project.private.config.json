@@ -3,5 +3,6 @@
   "projectname": "mp-weixin",
   "setting": {
     "compileHotReLoad": true
-  }
+  },
+  "libVersion": "3.7.12"
 }
