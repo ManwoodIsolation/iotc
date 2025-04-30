@@ -54,6 +54,9 @@
         "setting": {
             "urlCheck": false
         },
+        "backgroundFetch": {
+            "enabled": true
+        },
         "usingComponents": true
     },
     "mp-alipay": {

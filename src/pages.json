@@ -5,8 +5,34 @@
 			"style": {
 				"navigationBarTitleText": "uni-app"
 			}
+		},
+		{
+			"path": "pages/test/test",
+			"style": {
+				"navigationBarTitleText": "test"
+			}
 		}
 	],
+	"tabBar": {
+		"color": "#7A7E83",
+		"selectedColor": "#3cc51f",
+		"borderStyle": "black",
+		"backgroundColor": "#ffffff",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"text": "首页",
+				// "iconPath": "static/icon/home.png",
+				// "selectedIconPath": "static/icon/home-active.png"
+			},
+			{
+				"pagePath": "pages/test/test",
+				"text": "测试",
+				// "iconPath": "static/icon/test.png",
+				// "selectedIconPath": "static/icon/test-active.png"
+			}
+		]
+	},
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",

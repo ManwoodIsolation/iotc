@@ -3,144 +3,157 @@ const common_vendor = require("../../common/vendor.js");
 const _sfc_main = {
   __name: "index",
   setup(__props) {
-    const devices = common_vendor.ref([]);
-    const deviceId = common_vendor.ref("");
-    const isConnected = common_vendor.ref(false);
-    const receivedData = common_vendor.ref("");
-    const serviceId = common_vendor.ref("0000FFE0-0000-1000-8000-00805F9B34FB");
-    const characteristicId = common_vendor.ref("0000FFE1-0000-1000-8000-00805F9B34FB");
-    const initBLE = () => {
+    const blueDeviceList = common_vendor.ref([]);
+    function initBlue() {
       common_vendor.index.openBluetoothAdapter({
-        success: () => {
-          console.log("蓝牙适配器初始化成功");
-          common_vendor.index.getBluetoothAdapterState({
-            success: (res) => {
-              if (!res.available) {
-                common_vendor.index.showToast({ title: "蓝牙不可用", icon: "none" });
-              }
-            }
-          });
+        success(res) {
+          console.log("初始化蓝牙成功");
+          console.log(res);
         },
-        fail: (err) => {
-          console.error("蓝牙初始化失败:", err);
-          common_vendor.index.showToast({ title: "蓝牙初始化失败，请检查蓝牙是否开启", icon: "none" });
+        fail(err) {
+          console.log("初始化蓝牙失败");
+          console.error(err);
         }
       });
-    };
-    const startBluetoothDevicesDiscovery = () => {
+    }
+    function discovery() {
       common_vendor.index.startBluetoothDevicesDiscovery({
-        services: [serviceId.value],
-        success: () => {
-          console.log("开始搜索设备");
-          listenDevices();
+        success(res) {
+          console.log("开始搜索");
+          common_vendor.index.onBluetoothDeviceFound(found);
         },
-        fail: (err) => {
-          console.error("搜索失败:", err);
-          common_vendor.index.showToast({ title: "搜索失败", icon: "none" });
+        fail(err) {
+          console.log("搜索失败");
+          console.error(err);
         }
       });
-    };
-    const listenDevices = () => {
-      common_vendor.index.onBluetoothDeviceFound(({ devices: foundDevices }) => {
-        const newDevices = foundDevices.filter((newDevice) => {
-          return !devices.value.some((device) => device.deviceId === newDevice.deviceId);
-        });
-        const filteredDevices = newDevices.filter(
-          (device) => device.name && device.name.toLowerCase().includes("your-device-prefix")
-        );
-        devices.value = [...devices.value, ...filteredDevices];
+    }
+    function found(res) {
+      console.log(res);
+      blueDeviceList.value.push(res.devices[0]);
+    }
+    const deviceId = common_vendor.ref("");
+    function connect(data) {
+      console.log(data);
+      deviceId.value = data.deviceId;
+      common_vendor.index.createBLEConnection({
+        deviceId: deviceId.value,
+        success(res) {
+          console.log("连接成功");
+          console.log(res);
+          stopDiscovery();
+        },
+        fail(err) {
+          console.log("连接失败");
+          console.error(err);
+        }
       });
-    };
-    const selectDevice = (device) => {
-      deviceId.value = device.deviceId;
-    };
-    const createBLEConnection = async () => {
-      if (!deviceId.value) {
-        common_vendor.index.showToast({ title: "请先选择设备", icon: "none" });
-        return;
-      }
-      try {
-        await common_vendor.index.createBLEConnection({ deviceId: deviceId.value });
-        console.log("连接成功");
-        isConnected.value = true;
-        listenCharacteristic();
-      } catch (err) {
-        console.error("连接失败:", err);
-        common_vendor.index.showToast({ title: "连接失败", icon: "none" });
-      }
-    };
-    const listenCharacteristic = async () => {
-      try {
-        const services = await common_vendor.index.getBLEDeviceServices({ deviceId: deviceId.value });
-        const service = services.services.find((s) => s.uuid === serviceId.value);
-        if (!service) {
-          console.error("未找到指定服务");
-          return;
+    }
+    function stopDiscovery() {
+      common_vendor.index.stopBluetoothDevicesDiscovery({
+        success(res) {
+          console.log("停止成功");
+          console.log(res);
+        },
+        fail(err) {
+          console.log("停止失败");
+          console.error(err);
         }
-        const characteristics = await common_vendor.index.getBLEDeviceCharacteristics({
-          deviceId: deviceId.value,
-          serviceId: service.uuid
-        });
-        const characteristic = characteristics.characteristics.find((c) => c.uuid === characteristicId.value && c.properties.notify);
-        if (!characteristic) {
-          console.error("未找到可通知的特征值");
-          return;
+      });
+    }
+    function getServices() {
+      common_vendor.index.getBLEDeviceServices({
+        deviceId: deviceId.value,
+        // 设备ID，在上一步【4】里获取
+        success(res) {
+          console.log(res);
+        },
+        fail(err) {
+          console.error(err);
         }
-        await common_vendor.index.notifyBLECharacteristicValueChange({
-          deviceId: deviceId.value,
-          serviceId: service.uuid,
-          characteristicId: characteristic.uuid,
-          state: true
-        });
-        common_vendor.index.onBLECharacteristicValueChange(({ value }) => {
-          receivedData.value += hex2string(value) + "\n";
-        });
-      } catch (err) {
-        console.error("监听特征值失败:", err);
+      });
+    }
+    function getCharacteristics() {
+      common_vendor.index.getBLEDeviceCharacteristics({
+        deviceId: deviceId.value,
+        // 设备ID，在【4】里获取到
+        serviceId: "0000FFE0-0000-1000-8000-00805F9B34FB",
+        // 服务UUID，在【6】里能获取到
+        success(res) {
+          console.log(res);
+        },
+        fail(err) {
+          console.error(err);
+        }
+      });
+    }
+    function listenValueChange() {
+      console.log("监听消息变化");
+      common_vendor.index.onBLECharacteristicValueChange((res) => {
+        console.log("监听消息变化", res);
+        let resHex = ab2hex(res.value);
+        let result = hexCharCodeToStr(resHex);
+        console.log(result);
+      });
+    }
+    function notify() {
+      common_vendor.index.notifyBLECharacteristicValueChange({
+        deviceId: deviceId.value,
+        // 设备ID，在【4】里获取到
+        serviceId: "0000FFE0-0000-1000-8000-00805F9B34FB",
+        // 服务UUID，在【6】里能获取到
+        characteristicId: "0000FFE1-0000-1000-8000-00805F9B34FB",
+        // 特征值，在【7】里能获取到
+        state: true,
+        success(res) {
+          console.log("开启消息监听成功", res);
+          listenValueChange();
+        },
+        fail(err) {
+          console.error("开启消息监听error", err);
+        }
+      });
+    }
+    function ab2hex(buffer) {
+      const hexArr = Array.prototype.map.call(
+        new Uint8Array(buffer),
+        function(bit) {
+          return ("00" + bit.toString(16)).slice(-2);
+        }
+      );
+      return hexArr.join("");
+    }
+    function hexCharCodeToStr(hexCharCodeStr) {
+      var trimedStr = hexCharCodeStr.trim();
+      var rawStr = trimedStr.substr(0, 2).toLowerCase() === "0x" ? trimedStr.substr(2) : trimedStr;
+      var len = rawStr.length;
+      if (len % 2 !== 0) {
+        alert("存在非法字符!");
+        return "";
       }
-    };
-    const hex2string = (buffer) => {
-      const u8 = new Uint8Array(buffer);
-      return Array.from(u8).map((b) => b.toString(16).padStart(2, "0")).join(" ");
-    };
-    const closeBLEConnection = () => {
-      if (deviceId.value) {
-        common_vendor.index.closeBLEConnection({ deviceId: deviceId.value });
-        isConnected.value = false;
-        deviceId.value = "";
-        console.log("连接已关闭");
+      var curCharCode;
+      var resultStr = [];
+      for (var i = 0; i < len; i = i + 2) {
+        curCharCode = parseInt(rawStr.substr(i, 2), 16);
+        resultStr.push(String.fromCharCode(curCharCode));
       }
-    };
-    common_vendor.onLoad(() => {
-      initBLE();
-    });
-    common_vendor.onUnload(() => {
-      if (isConnected.value)
-        closeBLEConnection();
-      common_vendor.index.stopBluetoothDevicesDiscovery();
-    });
+      return resultStr.join("");
+    }
     return (_ctx, _cache) => {
-      return common_vendor.e({
-        a: common_vendor.o(initBLE),
-        b: common_vendor.o(startBluetoothDevicesDiscovery),
-        c: common_vendor.t(isConnected.value ? "已连接" : "连接设备"),
-        d: !deviceId.value || isConnected.value,
-        e: common_vendor.o(createBLEConnection),
-        f: devices.value.length
-      }, devices.value.length ? {
-        g: common_vendor.f(devices.value, (device, k0, i0) => {
+      return {
+        a: common_vendor.f(blueDeviceList.value, (item, k0, i0) => {
           return {
-            a: common_vendor.t(device.name || "未知设备"),
-            b: common_vendor.t(device.RSSI),
-            c: device.deviceId,
-            d: common_vendor.o(($event) => selectDevice(device), device.deviceId)
+            a: common_vendor.t(item.deviceId),
+            b: common_vendor.t(item.name),
+            c: common_vendor.o(($event) => connect(item))
           };
-        })
-      } : {}, {
-        h: common_vendor.t(isConnected.value ? "已连接" : "未连接"),
-        i: common_vendor.n(isConnected.value ? "text-green-500" : "text-red-500"),
-        j: common_vendor.t(receivedData.value)
-      });
+        }),
+        b: common_vendor.o(initBlue),
+        c: common_vendor.o(discovery),
+        d: common_vendor.o(getServices),
+        e: common_vendor.o(getCharacteristics),
+        f: common_vendor.o(notify)
+      };
     };
   }
 };

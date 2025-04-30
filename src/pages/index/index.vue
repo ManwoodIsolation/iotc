@@ -1,190 +1,241 @@
 <template>
-  <view class="content p-4">
-    <!-- 蓝牙控制区域 -->
-    <view class="mb-6">
-      <button class="bg-blue-500 text-white p-2 rounded mr-2" @click="initBLE">
-        初始化蓝牙
-      </button>
-      <button class="bg-blue-500 text-white p-2 rounded mr-2" @click="startBluetoothDevicesDiscovery">
-        开始搜索设备
-      </button>
-      <button class="bg-green-500 text-white p-2 rounded" :disabled="!deviceId || isConnected"
-        @click="createBLEConnection">
-        {{ isConnected ? '已连接' : '连接设备' }}
-      </button>
-    </view>
-
-    <!-- 设备列表 -->
-    <view class="mb-6" v-if="devices.length">
-      <text class="block mb-2 font-bold">可用设备：</text>
-      <scroll-view class="h-40 border rounded p-2">
-        <view v-for="device in devices" :key="device.deviceId" class="p-2 border-b" @click="selectDevice(device)">
-          <text class="font-medium">{{ device.name || '未知设备' }}</text>
-          <text class="block text-gray-600 text-sm">信号强度: {{ device.RSSI }}dBm</text>
-        </view>
+  <view>
+      <scroll-view
+          scroll-y
+          class="box"
+      >
+          <view class="item" v-for="item in blueDeviceList" @click="connect(item)">
+              <view>
+                  <text>id: {{ item.deviceId }}</text>    
+              </view>
+              <view>
+                  <text>name: {{ item.name }}</text>  
+              </view>
+          </view>
       </scroll-view>
-    </view>
-
-    <!-- 数据接收框 -->
-    <view class="bg-gray-100 p-4 rounded-lg shadow-md">
-      <view class="flex justify-between mb-2">
-        <text class="font-bold text-gray-800">实时数据：</text>
-        <text class="text-sm" :class="isConnected ? 'text-green-500' : 'text-red-500'">
-          {{ isConnected ? '已连接' : '未连接' }}
-        </text>
-      </view>
-      <scroll-view class="h-64 bg-white rounded p-3 font-mono text-sm" scroll-y>
-        <text class="break-all">{{ receivedData }}</text>
-      </scroll-view>
-    </view>
+      
+      <button @click="initBlue">初始化蓝牙</button>
+      
+      <button @click="discovery">搜索附近蓝牙设备</button>
+      <button @click="getServices">获取蓝牙服务</button>
+      <button @click="getCharacteristics">获取特征值</button>
+      <button @click="notify">开启消息监听</button>
+      <!-- <button @click="send">发送数据</button> -->
   </view>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { onLoad, onUnload } from '@dcloudio/uni-app';
+import { ref } from 'vue'
 
-// 蓝牙相关状态
-const devices = ref([])
-const deviceId = ref('')
-const isConnected = ref(false)
-const receivedData = ref('')
-const serviceId = ref('0000FFE0-0000-1000-8000-00805F9B34FB') // 需要替换为你的设备服务 UUID
-const characteristicId = ref('0000FFE1-0000-1000-8000-00805F9B34FB') // 需要替换为你的特征值 UUID
+// 搜索到的蓝牙设备列表
+const blueDeviceList = ref([])
 
-// 初始化蓝牙模块
-const initBLE = () => {
+// 【1】初始化蓝牙
+function initBlue() {
   uni.openBluetoothAdapter({
-    success: () => {
-      console.log('蓝牙适配器初始化成功')
-      // 检查蓝牙适配器状态
-      uni.getBluetoothAdapterState({
-        success: (res) => {
-          if (!res.available) {
-            uni.showToast({ title: '蓝牙不可用', icon: 'none' })
-          }
-        }
-      })
-    },
-    fail: (err) => {
-      console.error('蓝牙初始化失败:', err)
-      uni.showToast({ title: '蓝牙初始化失败，请检查蓝牙是否开启', icon: 'none' })
-    }
+      success(res) {
+          console.log('初始化蓝牙成功')
+          console.log(res)
+      },
+      fail(err) {
+          console.log('初始化蓝牙失败')
+          console.error(err)
+      }
   })
 }
 
-// 开始搜索设备
-const startBluetoothDevicesDiscovery = () => {
+// 【2】开始搜寻附近设备
+function discovery() {
   uni.startBluetoothDevicesDiscovery({
-    services: [serviceId.value],
-    success: () => {
-      console.log('开始搜索设备')
-      listenDevices()
-    },
-    fail: (err) => {
-      console.error('搜索失败:', err)
-      uni.showToast({ title: '搜索失败', icon: 'none' })
-    }
+      success(res) {
+          console.log('开始搜索')
+          // 开启监听回调
+          uni.onBluetoothDeviceFound(found)
+      },
+      fail(err) {
+          console.log('搜索失败')
+          console.error(err)
+      }
   })
 }
 
-// 监听发现新设备
-const listenDevices = () => {
-  uni.onBluetoothDeviceFound(({ devices: foundDevices }) => {
-    // 过滤重复设备
-    const newDevices = foundDevices.filter(newDevice => {
-      return !devices.value.some(device => device.deviceId === newDevice.deviceId)
-    })
-    // 过滤设备名称
-    const filteredDevices = newDevices.filter(device =>
-      device.name && device.name.toLowerCase().includes('your-device-prefix')
-    )
-    devices.value = [...devices.value, ...filteredDevices]
+// 【3】找到新设备就触发该方法
+function found(res) {
+  console.log(res)
+  blueDeviceList.value.push(res.devices[0])
+}
+
+// 蓝牙设备的id
+const deviceId = ref('')
+
+// 【4】连接设备
+function connect(data) {
+  console.log(data)
+
+  deviceId.value = data.deviceId
+
+  uni.createBLEConnection({
+      deviceId: deviceId.value,
+      success(res) {
+          console.log('连接成功')
+          console.log(res)
+          // 停止搜索
+          stopDiscovery()
+      },
+      fail(err) {
+          console.log('连接失败')
+          console.error(err)
+      }
   })
 }
 
-// 选择设备
-const selectDevice = (device) => {
-  deviceId.value = device.deviceId
+// 【5】停止搜索
+function stopDiscovery() {
+  uni.stopBluetoothDevicesDiscovery({
+      success(res) {
+          console.log('停止成功')
+          console.log(res)
+      },
+      fail(err) {
+          console.log('停止失败')
+          console.error(err)
+      }
+  })
+}
+// 【6】获取服务
+function getServices() {
+    uni.getBLEDeviceServices({
+        deviceId: deviceId.value, // 设备ID，在上一步【4】里获取
+        success(res) {
+            console.log(res)
+        },
+        fail(err) {
+            console.error(err)
+        }
+    })
+}
+// 【7】获取特征值
+function getCharacteristics() {
+    uni.getBLEDeviceCharacteristics({
+        deviceId: deviceId.value, // 设备ID，在【4】里获取到
+        serviceId: '0000FFE0-0000-1000-8000-00805F9B34FB', // 服务UUID，在【6】里能获取到
+        success(res) {
+            console.log(res)
+        },
+        fail(err) {
+            console.error(err)
+        }
+    })
+}
+// 【9】监听消息变化
+function listenValueChange() {
+  console.log('监听消息变化');
+  
+    uni.onBLECharacteristicValueChange(res => {
+        // 结果
+        console.log('监听消息变化',res)
+        
+        // 结果里有个value值，该值为 ArrayBuffer 类型，所以在控制台无法用肉眼观察到，必须将该值转换为16进制
+        let resHex = ab2hex(res.value)
+        // console.log(resHex)
+
+        // 最后将16进制转换为ascii码，就能看到对应的结果
+        let result = hexCharCodeToStr(resHex)
+        console.log(result)
+    })
+
 }
 
-// 建立连接
-const createBLEConnection = async () => {
-  if (!deviceId.value) {
-    uni.showToast({ title: '请先选择设备', icon: 'none' })
-    return
-  }
-  try {
-    await uni.createBLEConnection({ deviceId: deviceId.value })
-    console.log('连接成功')
-    isConnected.value = true
-    listenCharacteristic()
-  } catch (err) {
-    console.error('连接失败:', err)
-    uni.showToast({ title: '连接失败', icon: 'none' })
-  }
+// 【8】开启消息监听
+function notify() {
+    uni.notifyBLECharacteristicValueChange({
+        deviceId: deviceId.value, // 设备ID，在【4】里获取到
+        serviceId: '0000FFE0-0000-1000-8000-00805F9B34FB', // 服务UUID，在【6】里能获取到
+        characteristicId: '0000FFE1-0000-1000-8000-00805F9B34FB', // 特征值，在【7】里能获取到
+        state: true,
+        success(res) {
+            console.log("开启消息监听成功", res)
+            // 接受消息的方法
+            listenValueChange()
+        },
+        fail(err) {
+            console.error("开启消息监听error",err)
+        }
+    })
 }
 
-// 监听特征值变化
-const listenCharacteristic = async () => {
-  try {
-    const services = await uni.getBLEDeviceServices({ deviceId: deviceId.value })
-    const service = services.services.find(s => s.uuid === serviceId.value)
-    if (!service) {
-      console.error('未找到指定服务')
-      return
+// ArrayBuffer转16进度字符串示例
+function ab2hex(buffer) {
+  const hexArr = Array.prototype.map.call(
+    new Uint8Array(buffer),
+    function (bit) {
+      return ('00' + bit.toString(16)).slice(-2)
     }
-    const characteristics = await uni.getBLEDeviceCharacteristics({
-      deviceId: deviceId.value,
-      serviceId: service.uuid
-    })
-    const characteristic = characteristics.characteristics.find(c => c.uuid === characteristicId.value && c.properties.notify)
-    if (!characteristic) {
-      console.error('未找到可通知的特征值')
-      return
+  )
+  return hexArr.join('')
+}
+
+// 将16进制的内容转成我们看得懂的字符串内容
+function hexCharCodeToStr(hexCharCodeStr) {
+    var trimedStr = hexCharCodeStr.trim();
+    var rawStr = trimedStr.substr(0, 2).toLowerCase() === "0x" ? trimedStr.substr(2) : trimedStr;
+    var len = rawStr.length;
+    if (len % 2 !== 0) {
+            alert("存在非法字符!");
+            return "";
     }
-    // 启用通知
-    await uni.notifyBLECharacteristicValueChange({
-      deviceId: deviceId.value,
-      serviceId: service.uuid,
-      characteristicId: characteristic.uuid,
-      state: true
+    var curCharCode;
+    var resultStr = [];
+    for (var i = 0; i < len; i = i + 2) {
+            curCharCode = parseInt(rawStr.substr(i, 2), 16);
+            resultStr.push(String.fromCharCode(curCharCode));
+    }
+    return resultStr.join("");
+}
+// 【10】发送数据
+function send() {
+    // 向蓝牙设备发送一个0x00的16进制数据
+    
+    let msg = 'hello'
+    
+    const buffer = new ArrayBuffer(msg.length)
+    const dataView = new DataView(buffer)
+    // dataView.setUint8(0, 0)
+    
+    for (var i = 0; i < msg.length; i++) {
+      dataView.setUint8(i, msg.charAt(i).charCodeAt())
+    }
+    
+    uni.writeBLECharacteristicValue({
+      deviceId: deviceId.value, // 设备ID，在【4】里获取到
+      serviceId: '0000FFE0-0000-1000-8000-00805F9B34FB', // 服务UUID，在【6】里能获取到
+      characteristicId: '0000FFE1-0000-1000-8000-00805F9B34FB', // 特征值，在【7】里能获取到
+      value: buffer,
+      success(res) {
+        console.log("发送数据成功",res)
+      },
+      fail(err) {
+        console.error("发送数据失败",err)
+      }
     })
-    // 监听数据接收
-    uni.onBLECharacteristicValueChange(({ value }) => {
-      receivedData.value += hex2string(value) + '\n'
-    })
-  } catch (err) {
-    console.error('监听特征值失败:', err)
-  }
 }
 
-// 十六进制转字符串
-const hex2string = (buffer) => {
-  const u8 = new Uint8Array(buffer)
-  return Array.from(u8)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join(' ')
-}
-
-// 断开连接
-const closeBLEConnection = () => {
-  if (deviceId.value) {
-    uni.closeBLEConnection({ deviceId: deviceId.value })
-    isConnected.value = false
-    deviceId.value = ''
-    console.log('连接已关闭')
-  }
-}
-
-// 页面加载时初始化蓝牙
-onLoad(() => {
-  initBLE()
-})
-
-// 页面卸载时清理
-onUnload(() => {
-  if (isConnected.value) closeBLEConnection()
-  uni.stopBluetoothDevicesDiscovery()
-});
 </script>
+
+<style>
+.box {
+  width: 100%;
+  height: 400rpx;
+  box-sizing: border-box;
+  margin-bottom: 20rpx;
+  border: 2px solid dodgerblue;
+}
+.item {
+  box-sizing: border-box;
+  padding: 10rpx;
+  border-bottom: 1px solid #ccc;
+}
+button {
+  margin-bottom: 20rpx;
+}
+</style>
