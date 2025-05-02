@@ -27,7 +27,7 @@
 <script setup>
 import { ref } from 'vue'
 
-// 搜索到的蓝牙设备列表
+// 到的蓝牙设备列表
 const blueDeviceList = ref([])
 
 // 【1】初始化蓝牙
