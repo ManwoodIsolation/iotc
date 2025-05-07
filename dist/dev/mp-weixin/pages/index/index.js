@@ -3,15 +3,29 @@ const common_vendor = require("../../common/vendor.js");
 const _sfc_main = {
   __name: "index",
   setup(__props) {
+    const Result = common_vendor.ref("");
+    const confidence = common_vendor.ref("");
     const blueDeviceList = common_vendor.ref([]);
+    const isConnected = common_vendor.ref(false);
+    const isListening = common_vendor.ref(false);
     function initBlue() {
       common_vendor.index.openBluetoothAdapter({
         success(res) {
           console.log("初始化蓝牙成功");
+          common_vendor.index.showToast({
+            title: "初始化蓝牙成功",
+            icon: "success",
+            duration: 1e3
+          });
           console.log(res);
         },
         fail(err) {
           console.log("初始化蓝牙失败");
+          common_vendor.index.showToast({
+            title: "初始化蓝牙失败",
+            icon: "none",
+            duration: 1e3
+          });
           console.error(err);
         }
       });
@@ -41,6 +55,7 @@ const _sfc_main = {
         success(res) {
           console.log("连接成功");
           console.log(res);
+          isConnected.value = true;
           stopDiscovery();
         },
         fail(err) {
@@ -88,15 +103,30 @@ const _sfc_main = {
       });
     }
     function listenValueChange() {
-      console.log("监听消息变化");
+      common_vendor.index.showToast({
+        title: "监听消息变化已开启",
+        icon: "none",
+        duration: 1e3
+      });
       common_vendor.index.onBLECharacteristicValueChange((res) => {
         console.log("监听消息变化", res);
         let resHex = ab2hex(res.value);
         let result = hexCharCodeToStr(resHex);
         console.log(result);
+        const resultMatch = result.match(/Result :\s*(.*?)\s*confidence \s*(\d+\.\d+)/);
+        if (resultMatch) {
+          Result.value = resultMatch[1];
+          confidence.value = parseFloat(resultMatch[2]);
+          console.log("提取的结果:", Result.value);
+          console.log("提取的置信度:", confidence.value);
+        } else {
+          console.log("无法提取结果和置信度");
+        }
       });
     }
     function notify() {
+      getServices();
+      getCharacteristics();
       common_vendor.index.notifyBLECharacteristicValueChange({
         deviceId: deviceId.value,
         // 设备ID，在【4】里获取到
@@ -108,6 +138,7 @@ const _sfc_main = {
         success(res) {
           console.log("开启消息监听成功", res);
           listenValueChange();
+          isListening.value = true;
         },
         fail(err) {
           console.error("开启消息监听error", err);
@@ -140,20 +171,41 @@ const _sfc_main = {
       return resultStr.join("");
     }
     return (_ctx, _cache) => {
-      return {
-        a: common_vendor.f(blueDeviceList.value, (item, k0, i0) => {
+      return common_vendor.e({
+        a: !isConnected.value
+      }, !isConnected.value ? {
+        b: common_vendor.f(blueDeviceList.value, (item, k0, i0) => {
           return {
             a: common_vendor.t(item.deviceId),
             b: common_vendor.t(item.name),
             c: common_vendor.o(($event) => connect(item))
           };
-        }),
-        b: common_vendor.o(initBlue),
-        c: common_vendor.o(discovery),
-        d: common_vendor.o(getServices),
-        e: common_vendor.o(getCharacteristics),
-        f: common_vendor.o(notify)
-      };
+        })
+      } : {}, {
+        c: isConnected.value
+      }, isConnected.value ? common_vendor.e({
+        d: common_vendor.t(deviceId.value),
+        e: Result.value && confidence.value
+      }, Result.value && confidence.value ? {
+        f: common_vendor.t(Result.value),
+        g: common_vendor.t(confidence.value)
+      } : {}) : {}, {
+        h: !isConnected.value
+      }, !isConnected.value ? {
+        i: common_vendor.o(initBlue)
+      } : {}, {
+        j: !isConnected.value
+      }, !isConnected.value ? {
+        k: common_vendor.o(discovery)
+      } : {}, {
+        l: !isListening.value && isConnected.value
+      }, !isListening.value && isConnected.value ? {
+        m: common_vendor.o(notify)
+      } : {}, {
+        n: isListening.value && isConnected.value
+      }, isListening.value && isConnected.value ? {
+        o: common_vendor.o(($event) => isListening.value = false)
+      } : {});
     };
   }
 };

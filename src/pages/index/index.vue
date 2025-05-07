@@ -25,7 +25,7 @@
     <!-- <button @click="getServices">获取蓝牙服务</button>
     <button @click="getCharacteristics">获取特征值</button> -->
     <button @click="notify" v-if="!isListening && isConnected">开启消息监听</button>
-    <button @click="unNotify" v-if="isListening && isConnected">关闭消息监听</button>
+    <button @click="isListening = false" v-if="isListening && isConnected">关闭消息监听</button>
     <!-- <button @click="send">发送数据</button> -->
   </view>
 </template>
@@ -194,6 +194,7 @@ function notify() {
       console.log("开启消息监听成功", res)
       // 接受消息的方法
       listenValueChange()
+      isListening.value = true
     },
     fail(err) {
       console.error("开启消息监听error", err)

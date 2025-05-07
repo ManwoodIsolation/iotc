@@ -1,3 +1,5 @@
+
+
 # Logs
 logs
 *.log
@@ -8,6 +10,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+dist
 .DS_Store
 dist
 *.local
@@ -19,4 +22,3 @@ dist
 *.njsproj
 *.sln
 *.sw?
-dist
