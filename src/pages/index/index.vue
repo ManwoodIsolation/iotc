@@ -26,7 +26,7 @@
     <button @click="getCharacteristics">获取特征值</button> -->
     <button @click="notify" v-if="!isListening && isConnected">开启消息监听</button>
     <button @click="isListening = false" v-if="isListening && isConnected">关闭消息监听</button>
-    <!-- <button @click="send">发送数据</button> -->
+    <button @click="send">发送数据</button>
   </view>
 </template>
 
