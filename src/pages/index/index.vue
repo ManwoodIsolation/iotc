@@ -26,7 +26,7 @@
     <button @click="getCharacteristics">获取特征值</button> -->
     <button @click="notify" v-if="!isListening && isConnected">开启消息监听</button>
     <button @click="isListening = false" v-if="isListening && isConnected">关闭消息监听</button>
-    <button @click="send">发送数据</button>
+    <!-- <button @click="send">发送数据</button> -->
   </view>
 </template>
 
@@ -157,15 +157,15 @@ function listenValueChange() {
   })
   uni.onBLECharacteristicValueChange(res => {
     // 结果
-    console.log('监听消息变化', res)
+    console.log('监听消息变化res:', res)
 
     // 结果里有个value值，该值为 ArrayBuffer 类型，所以在控制台无法用肉眼观察到，必须将该值转换为16进制
     let resHex = ab2hex(res.value)
-    // console.log(resHex)
+    console.log("监听到的消息resHex:",resHex)
 
     // 最后将16进制转换为ascii码，就能看到对应的结果
     let result = hexCharCodeToStr(resHex)
-    console.log(result)
+    console.log("监听到的消息result:",result)
     // 显示结果和置信度
     // 使用正则表达式提取result和confidence的值
     const resultMatch = result.match(/Result :\s*(.*?)\s*confidence \s*(\d+\.\d+)/)
@@ -185,6 +185,7 @@ function listenValueChange() {
 function notify() {
   getServices()
   getCharacteristics()
+  send()
   uni.notifyBLECharacteristicValueChange({
     deviceId: deviceId.value, // 设备ID，在【4】里获取到
     serviceId: '0000FFE0-0000-1000-8000-00805F9B34FB', // 服务UUID，在【6】里能获取到
@@ -232,16 +233,16 @@ function hexCharCodeToStr(hexCharCodeStr) {
 }
 // 【10】发送数据
 function send() {
-  // 向蓝牙设备发送一个0x00的16进制数据
 
-  let msg = 'hello'
+  let msg = 'set_smode=3\n'
 
   const buffer = new ArrayBuffer(msg.length)
   const dataView = new DataView(buffer)
-  // dataView.setUint8(0, 0)
+
 
   for (var i = 0; i < msg.length; i++) {
     dataView.setUint8(i, msg.charAt(i).charCodeAt())
+    // dataView.setUint8(i, msg.charAt(i))
   }
 
   uni.writeBLECharacteristicValue({
@@ -251,12 +252,49 @@ function send() {
     value: buffer,
     success(res) {
       console.log("发送数据成功", res)
+      console.log("发送的数据(buffer):", buffer);
+      
     },
     fail(err) {
       console.error("发送数据失败", err)
     }
   })
 }
+
+
+
+// function send() {
+//   let msg = 'set_smode=3';
+
+//   // 计算16进制字符串的长度（每个字符对应两个16进制字符）
+//   const hexLength = msg.length * 2;
+//   const buffer = new ArrayBuffer(hexLength);
+//   const dataView = new DataView(buffer);
+
+//   for (var i = 0; i < msg.length; i++) {
+//     const charCode = msg.charAt(i).charCodeAt();
+//     const highByte = charCode >> 8; // 高字节
+//     const lowByte = charCode & 0xFF; // 低字节
+
+//     // 将高字节和低字节分别存入DataView
+//     dataView.setUint8(i * 2, highByte);
+//     dataView.setUint8(i * 2 + 1, lowByte);
+//   }
+
+//   uni.writeBLECharacteristicValue({
+//     deviceId: deviceId.value, // 设备ID，在【4】里获取到
+//     serviceId: '0000FFE0-0000-1000-8000-00805F9B34FB', // 服务UUID，在【6】里能获取到
+//     characteristicId: '0000FFE1-0000-1000-8000-00805F9B34FB', // 特征值，在【7】里能获取到
+//     value: buffer,
+//     success(res) {
+//       console.log("发送数据成功", res);
+//       // console.log("发送的数据(buffer):", buffer);
+//     },
+//     fail(err) {
+//       console.error("发送数据失败", err);
+//     }
+//   });
+// }
 
 </script>
 
