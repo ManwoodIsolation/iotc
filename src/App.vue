@@ -21,6 +21,6 @@
   background:
   linear-gradient(to bottom, transparent,white),
   linear-gradient(to right, #8ee6ed, #f0b1b1);
-  height: 100%;
+  height: 100vh;
 }
 </style>

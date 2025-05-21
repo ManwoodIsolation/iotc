@@ -3,13 +3,15 @@
 		{
 			"path": "pages/index/index",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationBarTitleText": "uni-app",
+				"navigationStyle": "custom"
 			}
 		},
 		{
 			"path": "pages/test/test",
 			"style": {
-				"navigationBarTitleText": "test"
+				"navigationBarTitleText": "test",
+				"navigationStyle": "custom"
 			}
 		}
 	],
@@ -21,15 +23,16 @@
 		"list": [
 			{
 				"pagePath": "pages/index/index",
-				"text": "首页",
+				"text": "首页"
 				// "iconPath": "static/icon/home.png",
 				// "selectedIconPath": "static/icon/home-active.png"
 			},
 			{
 				"pagePath": "pages/test/test",
-				"text": "测试",
+				"text": "测试"
 				// "iconPath": "static/icon/test.png",
 				// "selectedIconPath": "static/icon/test-active.png"
+
 			}
 		]
 	},

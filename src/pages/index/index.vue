@@ -86,12 +86,13 @@ function found(res) {
 
 // 蓝牙设备的id
 const deviceId = ref('')
-
+const deviceName = ref('')
 // 【4】连接设备
 function connect(data) {
   console.log(data)
-
   deviceId.value = data.deviceId
+  deviceName.value = data.name
+  // deviceId.value = data.deviceId
 
   uni.createBLEConnection({
     deviceId: deviceId.value,

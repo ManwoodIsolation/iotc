@@ -25,5 +25,8 @@
       }
     ]
   },
+  "backgroundFetch": {
+    "enabled": true
+  },
   "usingComponents": {}
 }
