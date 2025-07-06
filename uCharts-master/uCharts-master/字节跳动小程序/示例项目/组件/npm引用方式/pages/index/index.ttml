@@ -1,0 +1,4 @@
+<!--index.ttml-->
+<view class="charts">
+  <qiun-tt-ucharts type="column" canvas2d="{{false}}" opts="{{opts}}" chartData="{{chartData}}" bindcomplete="complete"/>
+</view>

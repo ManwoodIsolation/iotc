@@ -1,0 +1,19 @@
+{
+    "setting": {
+        "urlCheck": false,
+        "es6": true,
+        "newFeature": false,
+        "postcss": false,
+        "autoCompile": true,
+        "mockUpdate": false,
+        "minified": false
+    },
+    "appid": "ttfe358888611f7093",
+    "projectname": "组件复制方式",
+    "projectType": "app",
+    "condition": {
+        "miniprogram": {
+            "current": -1
+        }
+    }
+}

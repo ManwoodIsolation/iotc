@@ -57,7 +57,21 @@
         "backgroundFetch": {
             "enabled": true
         },
-        "usingComponents": true
+        "usingComponents": true,
+        "permission": {
+      "scope.userLocation": {
+        "desc": "获取位置信息，用于连接附近设备"
+      }
+    },
+    "requiredPrivateInfos": [
+      "getLocation",
+      "chooseLocation"
+    ],
+    "networkTimeout": {
+      "request": 10000,
+      "connectSocket": 10000
+    }
+  
     },
     "mp-alipay": {
         "usingComponents": true

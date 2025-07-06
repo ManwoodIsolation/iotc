@@ -4,6 +4,8 @@ const common_vendor = require("./common/vendor.js");
 if (!Math) {
   "./pages/index/index.js";
   "./pages/test/test.js";
+  "./pages/wifi/wifi.js";
+  "./pages/chart/chart.js";
 }
 const _sfc_main = {};
 function _sfc_render(_ctx, _cache) {

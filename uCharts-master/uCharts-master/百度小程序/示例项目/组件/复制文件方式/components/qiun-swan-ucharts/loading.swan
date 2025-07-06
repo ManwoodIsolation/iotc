@@ -1,0 +1,7 @@
+<view>
+  <loading1 s-if="{{loadingType==1}}" />
+  <loading2 s-if="{{loadingType==2}}" />
+  <loading3 s-if="{{loadingType==3}}" />
+  <loading4 s-if="{{loadingType==4}}" />
+  <loading5 s-if="{{loadingType==5}}" />
+</view>

@@ -1,0 +1,4 @@
+<!--index.axml-->
+<view class="charts">
+  <canvas id="afMCYQMEmXXVAjNQFJvvfxbLSHuxNEOL" width="{{cWidth * pixelRatio}}" height="{{cHeight * pixelRatio}}" class="charts" onTouchEnd="tap"/>
+</view>

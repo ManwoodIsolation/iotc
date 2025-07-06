@@ -1,5 +1,7 @@
 {
   "navigationBarTitleText": "uni-app",
   "navigationStyle": "custom",
-  "usingComponents": {}
+  "usingComponents": {
+    "top-margin": "../../components/top-margin/top-margin"
+  }
 }

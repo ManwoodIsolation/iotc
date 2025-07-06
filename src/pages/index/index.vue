@@ -1,44 +1,86 @@
 <template>
-  <view>
-    <scroll-view scroll-y class="box" v-if="!isConnected">
-      <view class="item" v-for="item in blueDeviceList" @click="connect(item)">
-        <view>
-          <text>id: {{ item.deviceId }}</text>
-        </view>
-        <view>
-          <text>name: {{ item.name }}</text>
-        </view>
+  <view class="pageBg">
+    <topMargin/>
+    <!-- 顶部导航栏 -->
+    <!-- <view class="flex items-center justify-between px-4 py-2 bg-gray-500 text-white">
+      <text class="font-bold text-lg">声音分类系统</text>
+    </view> -->
+
+    <!-- 内容区域 -->
+    <view class="px-4 space-y-4 h-full">
+        <view
+        v-if="!isConnected && blueDeviceList.length === 0"
+        class="flex justify-center items-center h-full text-center text-gray-500 text-2xl font-bold"
+      >
+        <text>蓝牙设备列表为空，点击“开始扫描”获取可连接设备</text>
       </view>
-    </scroll-view>
-    <view v-if="isConnected">
-      <text>已连接设备: {{ deviceId }}</text>
-      <!-- <button @click="getServices">获取服务</button> -->
-      <!-- 显示结果和置信度 -->
-      <view v-if="Result && confidence">
-        <text class="result-text">结果: {{ Result }}</text>
-        <text class="confidence-text">置信度: {{ confidence }}</text>
+      <view v-if="!isConnected && blueDeviceList.length">
+        <view class="flex justify-between items-center mb-4 font-bold"> 可连接的蓝牙列表：</view>
+        <view
+          v-for="(device, index) in blueDeviceList"
+        :key="index"
+        class="bg-white p-4 rounded-lg shadow-md flex justify-between items-center mt-2"
+      >
+        <view class="flex flex-col">
+          <text class="font-bold">{{ device.name }}</text>
+          <view class="flex items-center text-gray-500">
+            <view class="h-3 w-3 rounded-full bg-green-500"></view>
+            <text class="ml-2">id: {{ device.deviceId }}</text>
+          </view>
+        </view>
+        <view class="border border-gray-300 rounded-full px-6 py-2 text-gray-500 text-sm" style="border: 1px solid gray;" @click="connect(device)">连接</view>
+      </view>
+      </view>
+     
+      <view v-if="isConnected"> 
+        <view class="mt-4 flex justify-center">
+          <view  class=" border border-gray-300 rounded-lg px-6 py-2 text-gray-500 text-sm"  style="border: 1px solid gray;">
+           已连接设备: {{ deviceName }}</view>
+        </view>
+        
+        <view class="flex flex-col items-center justify-center mt-4 h-full" >
+          <image class="w-[40vw]  rounded-full mb-4" :src="`../../static/${imageName}.png`" mode="aspectFit"></image>
+          <view class="text-center">
+            <view class="text-xl font-bold">Result: {{ imageMap[Result] || Result }}</view>
+            <text class="border border-gray-300 rounded-full px-6 py-2 text-gray-500 text-sm mt-2">confidence: {{ confidence }}</text>
+          </view>
+        </view>
+
+
       </view>
     </view>
-    <button @click="initBlue" v-if="!isConnected">初始化蓝牙</button>
 
-    <button @click="discovery" v-if="!isConnected">搜索附近蓝牙设备</button>
-    <!-- <button @click="getServices">获取蓝牙服务</button>
-    <button @click="getCharacteristics">获取特征值</button> -->
-    <button @click="notify" v-if="!isListening && isConnected">开启消息监听</button>
-    <button @click="isListening = false" v-if="isListening && isConnected">关闭消息监听</button>
-    <!-- <button @click="send">发送数据</button> -->
+    <!-- 底部按钮 -->
+    <view class="fixed bottom-4 left-1/2 transform -translate-x-1/2">
+      <view class="border border-gray-300 rounded-full px-6 py-2 text-gray-500 text-sm"
+      @click="discovery" v-if="!isConnected && blueDeviceList.length === 0" style="border: 1px solid gray;">
+        开始扫描
+      </view>
+    </view>
   </view>
 </template>
 
-<script setup>
+
+
+
+
+
+<script setup >
 import { ref } from 'vue'
+import { onLoad, onShow} from '@dcloudio/uni-app';
+import topMargin from '@/components/top-margin/top-margin.vue';
+import {imageMap,isDanger} from '@/utils/map'
+import { useHistoryStore } from '@/stores/history';
 // 存储结果和置信度
-const Result = ref('')
-const confidence = ref('')
+const Result = ref('Speak')
+const confidence = ref('0.91')
+const imageName=ref('Speech')
+// const imagePath=ref('@/static/Speech.png')
 // 搜索到的蓝牙设备列表
 const blueDeviceList = ref([])
 const isConnected = ref(false)
 const isListening = ref(false)
+const historyStore = useHistoryStore()
 // 【1】初始化蓝牙
 function initBlue() {
   uni.openBluetoothAdapter({
@@ -87,24 +129,40 @@ function found(res) {
 // 蓝牙设备的id
 const deviceId = ref('')
 const deviceName = ref('')
+
 // 【4】连接设备
 function connect(data) {
   console.log(data)
+
   deviceId.value = data.deviceId
   deviceName.value = data.name
-  // deviceId.value = data.deviceId
 
   uni.createBLEConnection({
     deviceId: deviceId.value,
     success(res) {
-      console.log('连接成功')
+      // console.log('连接成功')
+      uni.showToast({
+        title: '连接成功,开启消息监听',
+        icon: 'none',
+        duration: 1500
+      })
       console.log(res)
       // 停止搜索
       isConnected.value = true
       stopDiscovery()
+      // 开启消息监听
+      notify()
+     uni.pageScrollTo({
+    scrollTop: 0
+  })
     },
     fail(err) {
-      console.log('连接失败')
+      // console.log('连接失败')
+      uni.showToast({
+        title: '连接失败',
+        icon: 'none',
+        duration: 1500
+      })
       console.error(err)
     }
   })
@@ -169,14 +227,34 @@ function listenValueChange() {
     console.log("监听到的消息result:",result)
     // 显示结果和置信度
     // 使用正则表达式提取result和confidence的值
-    const resultMatch = result.match(/Result :\s*(.*?)\s*confidence \s*(\d+\.\d+)/)
+    const resultMatch = result.match(/Result :\s*(.*?)(?:,\s*confidence|\s*confidence)\s*(\d+\.\d+)/)
+
     if (resultMatch) {
       Result.value = resultMatch[1]
       confidence.value = parseFloat(resultMatch[2])
       console.log('提取的结果:', Result.value)
       console.log('提取的置信度:', confidence.value)
+      // 显示图片
+      imageName.value = imageMap[Result.value]||'default'
+      historyStore.addRecord({
+        date: new Date().toLocaleString(),
+        result: imageMap[Result.value]||Result.value, // 结果
+        confidence: confidence.value, // 置信度
+        num: 1, // 出现次数
+        danger: isDanger(imageName.value) // 是否危险
+      })
+      console.log("Result:", Result.value);
+      console.log("影射", imageMap[Result.value]);
+      
+      
+      console.log('图片名称:', imageName.value);
+      
     } else {
       console.log('无法提取结果和置信度')
+      // Result.value='Not Detected'
+      // confidence.value=0.00
+      // imageName.value = imageMap[Result.value]||'default'
+
     }
   })
 
@@ -261,60 +339,17 @@ function send() {
     }
   })
 }
-
-
-
-// function send() {
-//   let msg = 'set_smode=3';
-
-//   // 计算16进制字符串的长度（每个字符对应两个16进制字符）
-//   const hexLength = msg.length * 2;
-//   const buffer = new ArrayBuffer(hexLength);
-//   const dataView = new DataView(buffer);
-
-//   for (var i = 0; i < msg.length; i++) {
-//     const charCode = msg.charAt(i).charCodeAt();
-//     const highByte = charCode >> 8; // 高字节
-//     const lowByte = charCode & 0xFF; // 低字节
-
-//     // 将高字节和低字节分别存入DataView
-//     dataView.setUint8(i * 2, highByte);
-//     dataView.setUint8(i * 2 + 1, lowByte);
-//   }
-
-//   uni.writeBLECharacteristicValue({
-//     deviceId: deviceId.value, // 设备ID，在【4】里获取到
-//     serviceId: '0000FFE0-0000-1000-8000-00805F9B34FB', // 服务UUID，在【6】里能获取到
-//     characteristicId: '0000FFE1-0000-1000-8000-00805F9B34FB', // 特征值，在【7】里能获取到
-//     value: buffer,
-//     success(res) {
-//       console.log("发送数据成功", res);
-//       // console.log("发送的数据(buffer):", buffer);
-//     },
-//     fail(err) {
-//       console.error("发送数据失败", err);
-//     }
-//   });
-// }
-
+onLoad(()=>{
+  initBlue()
+})
+onShow(()=>{
+  //滚动到顶部
+  uni.pageScrollTo({
+    scrollTop: 0
+  })
+})
 </script>
 
 <style>
-.box {
-  width: 100%;
-  height: 400rpx;
-  box-sizing: border-box;
-  margin-bottom: 20rpx;
-  border: 2px solid dodgerblue;
-}
 
-.item {
-  box-sizing: border-box;
-  padding: 10rpx;
-  border-bottom: 1px solid #ccc;
-}
-
-button {
-  margin-bottom: 20rpx;
-}
 </style>

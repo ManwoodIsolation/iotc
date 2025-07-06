@@ -1,0 +1,6 @@
+{
+    "navigationBarTitleText": "uCharts",
+    "usingComponents": {
+      "qiun-swan-ucharts": "/components/qiun-swan-ucharts/index"
+    }
+}

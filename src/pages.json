@@ -10,7 +10,21 @@
 		{
 			"path": "pages/test/test",
 			"style": {
-				"navigationBarTitleText": "test",
+				"navigationBarTitleText": "history",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/wifi/wifi",
+			"style": {
+				"navigationBarTitleText": "wifi",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/chart/chart",
+			"style": {
+				"navigationBarTitleText": "chart",
 				"navigationStyle": "custom"
 			}
 		}
@@ -23,16 +37,26 @@
 		"list": [
 			{
 				"pagePath": "pages/index/index",
-				"text": "首页"
+				"text": "蓝牙模块"
 				// "iconPath": "static/icon/home.png",
 				// "selectedIconPath": "static/icon/home-active.png"
 			},
 			{
+				"pagePath": "pages/wifi/wifi",
+				"text": "WIFI模块"
+				// "iconPath": "static/icon/wifi.png",
+				// "selectedIconPath": "static/icon/wifi-active.png"
+			},
+			{
 				"pagePath": "pages/test/test",
-				"text": "测试"
+				"text": "历史记录"
 				// "iconPath": "static/icon/test.png",
 				// "selectedIconPath": "static/icon/test-active.png"
-
+			},
+			{
+				"pagePath": "pages/chart/chart",
+				"text": "可视化"
+				// "iconPath": "static/icon/chart.png",
 			}
 		]
 	},

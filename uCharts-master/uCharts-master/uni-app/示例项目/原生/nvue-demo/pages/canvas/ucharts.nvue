@@ -1,0 +1,82 @@
+<template>
+	<view class="container">
+		<gcanvas ref="gcanvess" class="canvas"></gcanvas>
+	</view>
+
+</template>
+
+<script>
+	import {
+		enable,
+		WeexBridge
+	} from '../../gcanvas/index.js';
+  import uCharts from '../../uni_modules/qiun-data-charts/js_sdk/u-charts/u-charts.js';
+  import demodata from '../../mockdata/demodata.json';
+  var uChartsInstance={};
+  
+	module.exports = {
+		onShow: function(e) {
+      
+		},
+    onReady: function(e) {
+      this.getServerData()
+    },
+		data: {
+    },
+		methods: {
+      getServerData(){
+        /*获取元素引用*/
+        var ganvas = this.$refs["gcanvess"];
+        /*通过元素引用获取canvas对象*/
+        this.canvasObj = enable(ganvas, {
+        	bridge: WeexBridge
+        });
+        //var ctx = gcanvas.getContext("2d");
+        /*获取绘图所需的上下文，目前不支持3d*/
+        let context = this.canvasObj.getContext('2d');
+        this.pixelRatio=uni.getSystemInfoSync().pixelRatio;
+        this.cWidth=uni.upx2px(750);
+        this.cHeight=uni.upx2px(500);
+        this.chartsData=JSON.parse(JSON.stringify(demodata.Line));
+        uChartsInstance["testid"]=new uCharts({
+          type: 'line',
+          context:context,
+          fontSize:11,
+          padding:[15,15,0,15],
+          dataLabel:true,
+          categories: this.chartsData.categories,
+          series: this.chartsData.series,
+          yAxis:{
+            disableGrid: false,
+          },
+          xAxis:{
+            disableGrid: false,
+          },
+          legend:{
+            show:true
+          },
+          animation: true,
+          width: this.cWidth,
+          height: this.cHeight,
+          extra: {
+          	line:{
+          		type: 'straight'
+          	}
+          }
+        });
+      },
+		}
+	}
+</script>
+
+<style>
+	.canvas {
+		width: 750upx;
+		height: 500upx;
+		background-color: #fff;
+	}
+	/* page */
+	.container {
+		flex-direction: column;
+	}
+</style>

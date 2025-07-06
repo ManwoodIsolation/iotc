@@ -1,7 +1,9 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/test/test"
+    "pages/test/test",
+    "pages/wifi/wifi",
+    "pages/chart/chart"
   ],
   "window": {
     "navigationBarTextStyle": "black",
@@ -17,16 +19,37 @@
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "首页"
+        "text": "蓝牙模块"
+      },
+      {
+        "pagePath": "pages/wifi/wifi",
+        "text": "WIFI模块"
       },
       {
         "pagePath": "pages/test/test",
-        "text": "测试"
+        "text": "历史记录"
+      },
+      {
+        "pagePath": "pages/chart/chart",
+        "text": "可视化"
       }
     ]
   },
   "backgroundFetch": {
     "enabled": true
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "获取位置信息，用于连接附近设备"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getLocation",
+    "chooseLocation"
+  ],
+  "networkTimeout": {
+    "request": 10000,
+    "connectSocket": 10000
   },
   "usingComponents": {}
 }

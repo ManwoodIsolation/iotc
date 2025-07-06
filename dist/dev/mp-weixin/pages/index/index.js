@@ -1,13 +1,21 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const utils_map = require("../../utils/map.js");
+const stores_history = require("../../stores/history.js");
+if (!Math) {
+  topMargin();
+}
+const topMargin = () => "../../components/top-margin/top-margin.js";
 const _sfc_main = {
   __name: "index",
   setup(__props) {
-    const Result = common_vendor.ref("");
-    const confidence = common_vendor.ref("");
+    const Result = common_vendor.ref("Speak");
+    const confidence = common_vendor.ref("0.91");
+    const imageName = common_vendor.ref("Speech");
     const blueDeviceList = common_vendor.ref([]);
     const isConnected = common_vendor.ref(false);
     const isListening = common_vendor.ref(false);
+    const historyStore = stores_history.useHistoryStore();
     function initBlue() {
       common_vendor.index.openBluetoothAdapter({
         success(res) {
@@ -55,13 +63,25 @@ const _sfc_main = {
       common_vendor.index.createBLEConnection({
         deviceId: deviceId.value,
         success(res) {
-          console.log("连接成功");
+          common_vendor.index.showToast({
+            title: "连接成功,开启消息监听",
+            icon: "none",
+            duration: 1500
+          });
           console.log(res);
           isConnected.value = true;
           stopDiscovery();
+          notify();
+          common_vendor.index.pageScrollTo({
+            scrollTop: 0
+          });
         },
         fail(err) {
-          console.log("连接失败");
+          common_vendor.index.showToast({
+            title: "连接失败",
+            icon: "none",
+            duration: 1500
+          });
           console.error(err);
         }
       });
@@ -116,12 +136,27 @@ const _sfc_main = {
         console.log("监听到的消息resHex:", resHex);
         let result = hexCharCodeToStr(resHex);
         console.log("监听到的消息result:", result);
-        const resultMatch = result.match(/Result :\s*(.*?)\s*confidence \s*(\d+\.\d+)/);
+        const resultMatch = result.match(/Result :\s*(.*?)(?:,\s*confidence|\s*confidence)\s*(\d+\.\d+)/);
         if (resultMatch) {
           Result.value = resultMatch[1];
           confidence.value = parseFloat(resultMatch[2]);
           console.log("提取的结果:", Result.value);
           console.log("提取的置信度:", confidence.value);
+          imageName.value = utils_map.imageMap[Result.value] || "default";
+          historyStore.addRecord({
+            date: (/* @__PURE__ */ new Date()).toLocaleString(),
+            result: utils_map.imageMap[Result.value] || Result.value,
+            // 结果
+            confidence: confidence.value,
+            // 置信度
+            num: 1,
+            // 出现次数
+            danger: utils_map.isDanger(imageName.value)
+            // 是否危险
+          });
+          console.log("Result:", Result.value);
+          console.log("影射", utils_map.imageMap[Result.value]);
+          console.log("图片名称:", imageName.value);
         } else {
           console.log("无法提取结果和置信度");
         }
@@ -198,41 +233,39 @@ const _sfc_main = {
         }
       });
     }
+    common_vendor.onLoad(() => {
+      initBlue();
+    });
+    common_vendor.onShow(() => {
+      common_vendor.index.pageScrollTo({
+        scrollTop: 0
+      });
+    });
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: !isConnected.value
-      }, !isConnected.value ? {
-        b: common_vendor.f(blueDeviceList.value, (item, k0, i0) => {
+        a: !isConnected.value && blueDeviceList.value.length === 0
+      }, !isConnected.value && blueDeviceList.value.length === 0 ? {} : {}, {
+        b: !isConnected.value && blueDeviceList.value.length
+      }, !isConnected.value && blueDeviceList.value.length ? {
+        c: common_vendor.f(blueDeviceList.value, (device, index, i0) => {
           return {
-            a: common_vendor.t(item.deviceId),
-            b: common_vendor.t(item.name),
-            c: common_vendor.o(($event) => connect(item))
+            a: common_vendor.t(device.name),
+            b: common_vendor.t(device.deviceId),
+            c: common_vendor.o(($event) => connect(device), index),
+            d: index
           };
         })
       } : {}, {
-        c: isConnected.value
-      }, isConnected.value ? common_vendor.e({
-        d: common_vendor.t(deviceId.value),
-        e: Result.value && confidence.value
-      }, Result.value && confidence.value ? {
-        f: common_vendor.t(Result.value),
-        g: common_vendor.t(confidence.value)
-      } : {}) : {}, {
-        h: !isConnected.value
-      }, !isConnected.value ? {
-        i: common_vendor.o(initBlue)
+        d: isConnected.value
+      }, isConnected.value ? {
+        e: common_vendor.t(deviceName.value),
+        f: `../../static/${imageName.value}.png`,
+        g: common_vendor.t(common_vendor.unref(utils_map.imageMap)[Result.value] || Result.value),
+        h: common_vendor.t(confidence.value)
       } : {}, {
-        j: !isConnected.value
-      }, !isConnected.value ? {
-        k: common_vendor.o(discovery)
-      } : {}, {
-        l: !isListening.value && isConnected.value
-      }, !isListening.value && isConnected.value ? {
-        m: common_vendor.o(notify)
-      } : {}, {
-        n: isListening.value && isConnected.value
-      }, isListening.value && isConnected.value ? {
-        o: common_vendor.o(($event) => isListening.value = false)
+        i: !isConnected.value && blueDeviceList.value.length === 0
+      }, !isConnected.value && blueDeviceList.value.length === 0 ? {
+        j: common_vendor.o(discovery)
       } : {});
     };
   }

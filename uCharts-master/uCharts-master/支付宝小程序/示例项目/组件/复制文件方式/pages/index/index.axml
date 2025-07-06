@@ -1,0 +1,4 @@
+<!--index.axml-->
+<view class="charts">
+  <qiun-my-ucharts type="column" canvas2d="{{false}}" opts="{{opts}}" chartData="{{chartData}}"/>
+</view>

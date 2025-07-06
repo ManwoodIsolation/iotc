@@ -1,0 +1,4 @@
+{
+	"usingComponents": { "qiun-error": "error", "qiun-loading": "loading" },
+	"component": true
+}

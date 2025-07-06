@@ -1,0 +1,7 @@
+<view>
+  <loading1 tt:if="{{loadingType==1}}" />
+  <loading2 tt:if="{{loadingType==2}}" />
+  <loading3 tt:if="{{loadingType==3}}" />
+  <loading4 tt:if="{{loadingType==4}}" />
+  <loading5 tt:if="{{loadingType==5}}" />
+</view>

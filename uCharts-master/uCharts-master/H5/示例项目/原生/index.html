@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>基本柱状图</title>
+  <style scoped>
+    .charts {
+      width: 600px;
+      height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <canvas id="jBnaXCJZgfBAfOnZQTMZKXtmHoNjOsaD" class="charts"></canvas>
+  </div>
+</body>
+<script src="assets/js/u-charts.js"></script>
+<script language="JavaScript">
+var uChartsInstance = {};
+
+function showCharts(id,data){
+  const canvas = document.getElementById(id);
+  const ctx = canvas.getContext("2d");
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  uChartsInstance[id] = new uCharts({
+    animation: true,
+    background: "#FFFFFF",
+    categories: data.categories,
+    color: ["#1890FF","#91CB74","#FAC858","#EE6666","#73C0DE","#3CA272","#FC8452","#9A60B4","#ea7ccc"],
+    context: ctx,
+    extra: {
+      column: {
+        type: "group",
+        width: 30,
+        activeBgColor: "#000000",
+        activeBgOpacity: 0.08
+      }
+    },
+    height: canvas.height,
+    legend: {},
+    padding: [15,15,0,5],
+    series: data.series,
+    type: "column",
+    width: canvas.width,
+    xAxis: {
+      disableGrid: true
+    },
+    yAxis: {
+      data: [
+        {
+          min: 0
+        }
+      ]
+    }
+  });
+  canvas.onclick = function(e) {
+    uChartsInstance[id].touchLegend(getH5Offset(e));
+    uChartsInstance[id].showToolTip(getH5Offset(e));
+  };
+  canvas.onmousemove=function(e) {
+    uChartsInstance[id].showToolTip(getH5Offset(e));
+  };
+}
+
+function getServerData() {
+  //模拟从服务器获取数据时的延时
+  setTimeout(() => {
+    //模拟服务器返回数据，如果数据格式和标准格式不同，需自行按下面的格式拼接
+    let res = {
+      categories: ["2016","2017","2018","2019","2020","2021"],
+      series: [
+        {
+          name: "目标值",
+          data: [35,36,31,33,13,34]
+        },
+        {
+          name: "完成量",
+          data: [18,27,21,24,6,28]
+        }
+      ]
+    };
+    showCharts('jBnaXCJZgfBAfOnZQTMZKXtmHoNjOsaD', res);
+  }, 500);
+}
+
+getServerData();
+</script>
+</html>

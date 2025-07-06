@@ -1,0 +1,44 @@
+<template>
+	<view class="container">
+    <!-- NVUE使用组件，需要在组件上绑定width和height，其值为px值，并且要与style中的宽高保持一致 -->
+    <!-- NVUE的canvas不支持虚线设置，故虚线会变成实线 -->
+    <qiun-data-charts-nvue type="column" style="width: 375;height: 250;" width="375" height="250" :chartData="chartsDataColumn1" />
+	</view>
+
+</template>
+
+<script>
+	module.exports = {
+		onShow: function(e) {
+      
+		},
+    onReady: function(e) {
+      this.getServerData()
+    },
+		data: {
+      chartsDataColumn1:{
+      }
+    },
+		methods: {
+      getServerData(){
+        this.chartsDataColumn1={
+          categories: ["2016", "2017", "2018", "2019", "2020", "2021"],
+          series: [{
+            name: "目标值",
+            data: [35, 36, 31, 33, 13, 34]
+          }, {
+            name: "完成量",
+            data: [18, 27, 21, 24, 6, 28]
+          }]
+        }
+      },
+		}
+	}
+</script>
+
+<style>
+	/* page */
+	.container {
+		flex-direction: column;
+	}
+</style>

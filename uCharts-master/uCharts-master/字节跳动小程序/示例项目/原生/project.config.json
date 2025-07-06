@@ -1,0 +1,14 @@
+{
+    "setting": {
+        "urlCheck": false,
+        "es6": true,
+        "newFeature": false,
+        "postcss": false,
+        "autoCompile": true,
+        "mockUpdate": false,
+        "minified": false
+    },
+    "appid": "testappId",
+    "projectname": "uCharts",
+    "projectType": "app"
+}

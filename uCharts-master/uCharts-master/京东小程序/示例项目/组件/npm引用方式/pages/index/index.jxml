@@ -1,0 +1,4 @@
+<!--index.jxml-->
+<view class="charts">
+  <qiun-jd-ucharts type="column" canvas2d="{{true}}" opts="{{opts}}" chartData="{{chartData}}" bindcomplete="complete"></qiun-jd-ucharts>
+</view>

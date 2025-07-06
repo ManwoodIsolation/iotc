@@ -1,0 +1,14 @@
+{
+    "appid": "testappid",
+    "host": "baiduboxapp",
+    "projectname": "百度小程序（原生）",
+    "setting": {
+        "urlCheck": false
+    },
+    "swan": {
+        "baiduboxapp": {
+            "swanJsVersion": "3.370.10",
+            "extensionJsVersion": "1.21.2"
+        }
+    }
+}

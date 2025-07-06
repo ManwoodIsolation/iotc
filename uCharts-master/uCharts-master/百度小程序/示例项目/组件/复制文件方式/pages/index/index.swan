@@ -1,0 +1,4 @@
+<!--index.swan-->
+<view class="charts">
+  <qiun-swan-ucharts type="column" opts="{{opts}}" chartData="{{chartData}}" bindcomplete="complete"/>
+</view>

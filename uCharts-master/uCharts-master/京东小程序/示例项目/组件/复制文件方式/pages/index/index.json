@@ -1,0 +1,5 @@
+{
+	"usingComponents": {
+		"qiun-jd-ucharts": "/components/qiun-jd-ucharts/index"
+	}
+}

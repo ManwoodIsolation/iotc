@@ -1,0 +1,5 @@
+{
+  "usingComponents": {
+    "qiun-my-ucharts": "@qiun/my-ucharts"
+  }
+}
